@@ -21,6 +21,8 @@
 					`formatter` VARCHAR(255) DEFAULT NULL,
 					`override` ENUM('yes', 'no') DEFAULT 'no',
 					`hide` ENUM('yes', 'no') DEFAULT 'no',
+					`hash` ENUM('yes', 'no') DEFAULT 'no',
+					`hash_value` VARCHAR(255) DEFAULT NULL,
 					`fetch_associated_counts` ENUM('yes','no') DEFAULT 'no',
 					PRIMARY KEY (`id`),
 					KEY `field_id` (`field_id`)

@@ -19,6 +19,8 @@
 			$this->set('allow_override', 'no');
 			$this->set('fetch_associated_counts', 'no');
 			$this->set('hide', 'no');
+			$this->set('hash', 'no');
+			$this->set('hash_value', null);
 		}
 
 		public function createTable() {
@@ -185,6 +187,44 @@
 
 			$this->appendShowColumnCheckbox($compact);
 			$wrapper->appendChild($compact);
+
+		/*---------------------------------------------------------------------
+			Hash input
+		---------------------------------------------------------------------*/
+
+			$hash = new XMLElement('div');
+			$hash->setAttribute('class', 'two columns');
+
+			$label = Widget::Label();
+			$label->setAttribute('class', 'column');
+			$input = Widget::Input("fields[{$order}][hash]", 'yes', 'checkbox');
+
+			if ($this->get('hash') == 'yes') {
+				$input->setAttribute('checked', 'checked');
+			}
+
+			$label->setValue($input->generate() . ' ' . __('Hash the field value?'));
+			$hash->appendChild($label);
+
+			$label = Widget::Label();
+			$label->setAttribute('class','column');
+
+			$hashvalue = $this->get('hash_value');
+			$options = array();
+			$options[] = array('', '', __('None'));
+			$options[] = array('md5',$hashvalue == 'md5'?true:false,'md5');
+			$options[] = array('sha1',$hashvalue == 'sha1'?true:false,'sha1');
+			$options[] = array('sha256',$hashvalue == 'sha256'?true:false,'sha256');
+
+			//array('md5','sha1','sha256','sha384','sha512'
+
+			$select = Widget::Select("fields[{$order}][hash_value]",
+				$options);
+			$select->setValue(__('Hash type'));
+			$label->appendChild($select);
+			$hash->appendChild($label);
+
+			$wrapper->appendChild($hash);
 		}
 
 		public function commit() {
@@ -202,7 +242,9 @@
 				'formatter'			=> $this->get('formatter'),
 				'override'			=> $this->get('override'),
 				'fetch_associated_counts' => $this->get('fetch_associated_counts'),
-				'hide'				=> $this->get('hide')
+				'hide'				=> $this->get('hide'),
+				'hash'				=> $this->get('hash'),
+				'hash_value'				=> $this->get('hash_value')
 			);
 
 			return FieldManager::saveSettings($id, $fields);
@@ -340,6 +382,13 @@
 			// Apply formatting:
 			if (!$value_formatted = $this->applyFormatting($value)) {
 				$value_formatted = General::sanitize($value);
+			}
+
+
+			//Hash the value:
+			if($this->get('hash')=='yes' && $this->get('hash_value') !=''){
+				$value = hash($this->get('hash_value'),$value);
+				$value_formatted = hash($this->get('hash_value'),$value);
 			}
 
 			$data = array(
